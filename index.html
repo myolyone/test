@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>CSS Template</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+header {
+  background-color: #666;
+  padding: 30px;
+  text-align: center;
+  font-size: 35px;
+  color: white;
+}
+
+section {
+  display: -webkit-flex;
+  display: flex;
+}
+
+nav {
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  background: #ccc;
+  padding: 20px;
+}
+
+nav ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+/* ตกแต่งปุ่มเมนูเพิ่มเติมให้กดง่ายขึ้น */
+nav ul li a {
+  display: block;
+  padding: 8px;
+  color: #333;
+  text-decoration: none;
+}
+nav ul li a:hover {
+  background-color: #bbb;
+}
+
+article {
+  -webkit-flex: 3;
+  -ms-flex: 3;
+  flex: 3;
+  background-color: #f1f1f1;
+  padding: 10px;
+}
+
+/* ซ่อนบทความเริ่มต้นทั้งหมดก่อน */
+.city-content {
+  display: none;
+}
+
+/* คลาสสำหรับแสดงบทความที่ถูกเลือก */
+.city-content.active {
+  display: block;
+}
+
+footer {
+  background-color: #777;
+  padding: 10px;
+  text-align: center;
+  color: white;
+}
+
+@media (max-width: 600px) {
+  section {
+    -webkit-flex-direction: column;
+    flex-direction: column;
+  }
+}
+</style>
+</head>
+<body>
+
+<h2>CSS Layout Flexbox (Dynamic Content)</h2>
+
+<header>
+  <h2>Cities</h2>
+</header>
+
+<section>
+  <nav>
+    <ul>
+      <li><a href="#" class="menu-link" data-target="london">London</a></li>
+      <li><a href="#" class="menu-link" data-target="paris">Paris</a></li>
+      <li><a href="#" class="menu-link" data-target="tokyo">Tokyo</a></li>
+    </ul>
+  </nav>
+  
+  <article id="london" class="city-content active">
+    <h1>London</h1>
+    <p>London is the capital city of England. It is the most populous city in the United Kingdom...</p>
+  </article>
+
+  <article id="paris" class="city-content">
+    <h1>Paris</h1>
+    <p>Paris is the capital and most populous city of France. Famous for its art, fashion, and gastronomy.</p>
+  </article>
+
+  <article id="tokyo" class="city-content">
+    <h1>Tokyo</h1>
+    <p>Tokyo is the capital and largest city of Japan. It is known for its modern skyscrapers, pop culture, and historic temples.</p>
+  </article>
+</section>
+
+<footer>
+  <p>Footer</p>
+</footer>
+
+<script>
+  const menuLinks = document.querySelectorAll('.menu-link');
+  const articles = document.querySelectorAll('.city-content');
+
+  menuLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault(); // ป้องกันไม่ให้หน้าเว็บเลื่อนขึ้นด้านบนตอนกดลิงก์ (#)
+      
+      // 1. ซ่อนบทความทั้งหมดก่อน
+      articles.forEach(article => article.classList.remove('active'));
+      
+      // 2. ดึงค่าจาก data-target ของเมนูที่ถูกคลิก
+      const targetId = this.getAttribute('data-target');
+      
+      // 3. แสดงบทความที่มี id ตรงกับที่คลิก
+      document.getElementById(targetId).classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>
