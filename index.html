@@ -1,143 +1,368 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-<title>CSS Template</title>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-* {
-  box-sizing: border-box;
-}
-
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-header {
-  background-color: #666;
-  padding: 30px;
-  text-align: center;
-  font-size: 35px;
-  color: white;
-}
-
-section {
-  display: -webkit-flex;
-  display: flex;
-}
-
-nav {
-  -webkit-flex: 1;
-  -ms-flex: 1;
-  flex: 1;
-  background: #ccc;
-  padding: 20px;
-}
-
-nav ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-/* ตกแต่งปุ่มเมนูเพิ่มเติมให้กดง่ายขึ้น */
-nav ul li a {
-  display: block;
-  padding: 8px;
-  color: #333;
-  text-decoration: none;
-}
-nav ul li a:hover {
-  background-color: #bbb;
-}
-
-article {
-  -webkit-flex: 3;
-  -ms-flex: 3;
-  flex: 3;
-  background-color: #f1f1f1;
-  padding: 10px;
-}
-
-/* ซ่อนบทความเริ่มต้นทั้งหมดก่อน */
-.city-content {
-  display: none;
-}
-
-/* คลาสสำหรับแสดงบทความที่ถูกเลือก */
-.city-content.active {
-  display: block;
-}
-
-footer {
-  background-color: #777;
-  padding: 10px;
-  text-align: center;
-  color: white;
-}
-
-@media (max-width: 600px) {
-  section {
-    -webkit-flex-direction: column;
-    flex-direction: column;
-  }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบยืม-คืน Laptop</title>
+    <!-- Chosen Palette: Custom Palette (Honeydew Green, Sunset Orange, Action Buttons: Green, Blue, Yellow, Red) -->
+    <!-- Application Structure Plan: A single-page dashboard application designed for clarity and efficiency. The structure is task-oriented, divided into three logical sections: 1. A real-time 'Status Dashboard' using cards for an immediate overview of laptop availability (the primary user goal). 2. A centralized 'Action Form' for all user operations (borrow, edit, return), which simplifies the workflow by providing a single point of interaction. 3. A 'Data History' table that fetches and displays the complete log from Google Sheets for transparency. This structure was chosen to separate the 'current state' from 'user actions' and 'historical records,' creating an intuitive user experience that guides the user from overview to action to review. -->
+    <!-- Visualization & Content Choices: 1. Laptop Status (Goal: Inform/Compare) -> Presentation: Grid of HTML/Tailwind cards -> Interaction: Color-coded status (green/red tint), clickable buttons to pre-fill the form. Justification: Cards are more visually engaging and informative for a small, fixed set of items than a chart or list. 2. Action Form (Goal: Organize/Interact) -> Presentation: Standard HTML form -> Interaction: Clearly labeled and colored buttons (Save/Edit/Return) guide user actions. Justification: A form is the universal standard for data entry. 3. Data History (Goal: Inform/Organize) -> Presentation: Scrollable HTML table -> Interaction: A single 'Fetch' button loads the data log on demand. Justification: A table is the optimal format for displaying structured historical log data without cluttering the main view. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: 'Sarabun', 'Inter', sans-serif;
+            background-color: #f0fff0;
+        }
+    </style>
 </head>
-<body>
+<body class="antialiased text-gray-800">
 
-<h2>CSS Layout Flexbox (Dynamic Content)</h2>
+    <div class="container mx-auto p-4 max-w-6xl">
 
-<header>
-  <h2>Cities</h2>
-</header>
+        <header class="bg-gradient-to-r from-orange-400 to-orange-600 text-white p-6 rounded-xl shadow-lg mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-center">ระบบจัดการยืม-คืน Laptop</h1>
+        </header>
 
-<section>
-  <nav>
-    <ul>
-      <li><a href="#" class="menu-link" data-target="london">London</a></li>
-      <li><a href="#" class="menu-link" data-target="paris">Paris</a></li>
-      <li><a href="#" class="menu-link" data-target="tokyo">Tokyo</a></li>
-    </ul>
-  </nav>
-  
-  <article id="london" class="city-content active">
-    <h1>London</h1>
-    <p>London is the capital city of England. It is the most populous city in the United Kingdom...</p>
-  </article>
+        <main class="space-y-8">
+            <section id="status-dashboard" class="p-6 bg-white rounded-xl shadow-lg">
+                <div class="mb-4">
+                     <h2 class="text-2xl font-bold text-gray-800">แดชบอร์ดสถานะ</h2>
+                     <p class="text-gray-600 mt-1">ส่วนนี้แสดงสถานะล่าสุดของ Laptop ทั้งหมด คุณสามารถคลิกที่ปุ่มบนการ์ดเพื่อเริ่มทำรายการยืม, ดูรายละเอียด, หรือแก้ไขข้อมูลการยืมได้อย่างรวดเร็ว</p>
+                </div>
+                <div id="laptop-status-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                </div>
+            </section>
 
-  <article id="paris" class="city-content">
-    <h1>Paris</h1>
-    <p>Paris is the capital and most populous city of France. Famous for its art, fashion, and gastronomy.</p>
-  </article>
+            <section id="action-form-section" class="p-6 bg-white rounded-xl shadow-lg">
+                 <div class="mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">ฟอร์มทำรายการ</h2>
+                    <p class="text-gray-600 mt-1">ใช้ฟอร์มนี้เพื่อบันทึกการยืมใหม่, แก้ไขข้อมูลผู้ยืม, หรือบันทึกการส่งคืน Laptop กรุณากรอกข้อมูลให้ครบถ้วนและเลือกรายการที่ต้องการจากปุ่มด้านล่าง</p>
+                </div>
+                <form id="borrow-form" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <div>
+                        <label for="laptop-id" class="block text-sm font-medium text-gray-700 mb-1">หมายเลข Laptop</label>
+                        <select id="laptop-id" required class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></select>
+                    </div>
+                    <div>
+                        <label for="borrower-name" class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้ยืม</label>
+                        <input type="text" id="borrower-name" required class="w-full p-2 border border-gray-300 rounded-md shadow-sm" placeholder="เช่น สมชาย ใจดี">
+                    </div>
+                    <div>
+                        <label for="student-grade" class="block text-sm font-medium text-gray-700 mb-1">ระดับชั้น</label>
+                        <input type="text" id="student-grade" required class="w-full p-2 border border-gray-300 rounded-md shadow-sm" placeholder="เช่น ม.6/1">
+                    </div>
+                    <div>
+                        <label for="borrow-date" class="block text-sm font-medium text-gray-700 mb-1">วันที่ยืม</label>
+                        <input type="date" id="borrow-date" required class="w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                    </div>
+                    <div>
+                        <label for="return-date" class="block text-sm font-medium text-gray-700 mb-1">กำหนดวันที่คืน</label>
+                        <input type="date" id="return-date" required class="w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                    </div>
 
-  <article id="tokyo" class="city-content">
-    <h1>Tokyo</h1>
-    <p>Tokyo is the capital and largest city of Japan. It is known for its modern skyscrapers, pop culture, and historic temples.</p>
-  </article>
-</section>
-
-<footer>
-  <p>Footer</p>
-</footer>
+                    <div class="md:col-span-2 flex flex-wrap items-center justify-end gap-3 pt-4 border-t mt-4">
+                        <button type="submit" id="save-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">บันทึกการยืม</button>
+                        <button type="button" id="edit-button" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">แก้ไขข้อมูล</button>
+                        <button type="button" id="return-button" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">ส่งคืนเครื่อง</button>
+                        <button type="button" id="clear-form-button" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105">ล้างฟอร์ม</button>
+                    </div>
+                </form>
+            </section>
+            
+            <section id="data-history" class="p-6 bg-white rounded-xl shadow-lg">
+                <div class="mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800">ประวัติการทำรายการ</h2>
+                    <p class="text-gray-600 mt-1">ส่วนนี้แสดงประวัติการทำรายการทั้งหมดที่บันทึกไว้ใน Google Sheet กดปุ่มด้านล่างเพื่อเรียกดูข้อมูลล่าสุด</p>
+                </div>
+                <button id="fetch-gs-data-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 mb-4">เรียกดูข้อมูล Google Sheet</button>
+                <div class="overflow-x-auto border border-gray-200 rounded-lg" style="max-height: 500px; overflow-y: auto;">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รายการ</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Laptop ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อ</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชั้น</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">วันที่ยืม</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">กำหนดคืน</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gs-data-body" class="bg-white divide-y divide-gray-200">
+                           <tr><td colspan="8" class="px-6 py-4 text-center text-gray-500">ยังไม่มีข้อมูล, กรุณากดปุ่ม "เรียกดูข้อมูล"</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
 
 <script>
-  const menuLinks = document.querySelectorAll('.menu-link');
-  const articles = document.querySelectorAll('.city-content');
+    const GAS_URL = "https://script.google.com/macros/s/AKfycby58Wwizj8xO8jRLS3bW1PBMxuXM-ZafmWY61ISG7nh0IDH28qky8etelSFdDbdM1UC/exec";
+    const LAPTOP_IDS = [3, 4, 5, 6];
 
-  menuLinks.forEach(link => {
-    link.addEventListener('click', function(e) {
-      e.preventDefault(); // ป้องกันไม่ให้หน้าเว็บเลื่อนขึ้นด้านบนตอนกดลิงก์ (#)
-      
-      // 1. ซ่อนบทความทั้งหมดก่อน
-      articles.forEach(article => article.classList.remove('active'));
-      
-      // 2. ดึงค่าจาก data-target ของเมนูที่ถูกคลิก
-      const targetId = this.getAttribute('data-target');
-      
-      // 3. แสดงบทความที่มี id ตรงกับที่คลิก
-      document.getElementById(targetId).classList.add('active');
-    });
-  });
+    let laptopsState = [];
+
+    const elements = {
+        statusContainer: document.getElementById('laptop-status-container'),
+        form: document.getElementById('borrow-form'),
+        laptopIdSelect: document.getElementById('laptop-id'),
+        borrowerNameInput: document.getElementById('borrower-name'),
+        studentGradeInput: document.getElementById('student-grade'),
+        borrowDateInput: document.getElementById('borrow-date'),
+        returnDateInput: document.getElementById('return-date'),
+        gsDataBody: document.getElementById('gs-data-body')
+    };
+    
+    function showAlert(title, text, icon) {
+        Swal.fire({ title, text, icon, confirmButtonText: 'ตกลง' });
+    }
+
+    function showLoading(title = 'กำลังประมวลผล...') {
+        Swal.fire({
+            title: title,
+            text: 'กรุณารอสักครู่',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+    }
+    
+    function saveStateToLocalStorage() {
+        localStorage.setItem('laptopsData', JSON.stringify(laptopsState));
+    }
+
+    function loadStateFromLocalStorage() {
+        const storedData = localStorage.getItem('laptopsData');
+        if (storedData) {
+            laptopsState = JSON.parse(storedData);
+        } else {
+            laptopsState = LAPTOP_IDS.map(id => ({
+                id,
+                status: 'available',
+                borrower: '',
+                grade: '',
+                borrowDate: '',
+                returnDate: ''
+            }));
+        }
+    }
+    
+    function renderLaptopIdOptions() {
+        elements.laptopIdSelect.innerHTML = '<option value="">-- กรุณาเลือก --</option>';
+        laptopsState.forEach(laptop => {
+            const option = document.createElement('option');
+            option.value = laptop.id;
+            option.textContent = `Laptop ${laptop.id} (${laptop.status})`;
+            elements.laptopIdSelect.appendChild(option);
+        });
+    }
+
+    function renderStatusCards() {
+        elements.statusContainer.innerHTML = '';
+        laptopsState.forEach(laptop => {
+            const isBorrowed = laptop.status === 'borrowed';
+            const cardBg = isBorrowed ? 'bg-red-50' : 'bg-green-50';
+            const borderColor = isBorrowed ? 'border-red-200' : 'border-green-200';
+            const statusText = isBorrowed ? 'ถูกยืม' : 'ว่าง';
+            const statusColor = isBorrowed ? 'text-red-600' : 'text-green-600';
+            const buttonText = isBorrowed ? 'ดู/แก้ไข' : 'ยืมเครื่องนี้';
+            const buttonColor = isBorrowed ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-500 hover:bg-blue-600';
+
+            const cardHTML = `
+                <div class="p-4 rounded-lg shadow-md border ${borderColor} ${cardBg}">
+                    <h3 class="text-xl font-bold">Laptop ${laptop.id}</h3>
+                    <p class="font-semibold ${statusColor}">${statusText}</p>
+                    ${isBorrowed ? `
+                        <div class="text-sm mt-2 text-gray-700">
+                            <p><strong>ผู้ยืม:</strong> ${laptop.borrower}</p>
+                            <p><strong>ชั้น:</strong> ${laptop.grade}</p>
+                            <p><strong>ยืมวันที่:</strong> ${laptop.borrowDate}</p>
+                        </div>
+                    ` : '<div class="h-16"></div>'}
+                    <button data-id="${laptop.id}" class="w-full mt-3 py-2 px-4 rounded-md text-white font-semibold transition-colors ${buttonColor} action-btn">
+                        ${buttonText}
+                    </button>
+                </div>
+            `;
+            elements.statusContainer.insertAdjacentHTML('beforeend', cardHTML);
+        });
+        document.querySelectorAll('.action-btn').forEach(btn => btn.addEventListener('click', handleCardAction));
+    }
+    
+    function handleCardAction(event) {
+        const id = parseInt(event.target.dataset.id);
+        const laptop = laptopsState.find(l => l.id === id);
+        if (laptop) {
+            elements.laptopIdSelect.value = id;
+            fillFormFromState(laptop);
+            elements.form.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+    
+    function fillFormFromState(laptop) {
+        elements.borrowerNameInput.value = laptop.borrower || '';
+        elements.studentGradeInput.value = laptop.grade || '';
+        elements.borrowDateInput.value = laptop.borrowDate || '';
+        elements.returnDateInput.value = laptop.returnDate || '';
+    }
+    
+    function clearForm() {
+        elements.form.reset();
+        elements.laptopIdSelect.value = '';
+    }
+    
+    window.handleGasResponse = function(response) {
+        Swal.close();
+        if (response.success) {
+            if (response.data) { // Fetch action
+                showAlert('สำเร็จ', 'ดึงข้อมูลจาก Google Sheet สำเร็จ', 'success');
+                renderGoogleSheetData(response.data);
+            } else { // Save/Edit/Return action
+                showAlert('สำเร็จ', 'บันทึกข้อมูลลง Google Sheet เรียบร้อย', 'success');
+                saveStateToLocalStorage();
+                renderAll();
+            }
+        } else {
+            showAlert('ผิดพลาด', response.message || 'การเชื่อมต่อกับ Google Sheet ล้มเหลว', 'error');
+        }
+    };
+
+    function sendDataToGAS(action, data = {}) {
+        showLoading(action === 'fetch' ? 'กำลังดึงข้อมูล...' : 'กำลังบันทึก...');
+        
+        const params = new URLSearchParams(data);
+        params.append('action', action);
+        params.append('callback', 'handleGasResponse');
+
+        const script = document.createElement('script');
+        script.src = `${GAS_URL}?${params.toString()}`;
+        script.onerror = () => {
+             Swal.close();
+             showAlert('เครือข่ายผิดพลาด', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ Google ได้', 'error');
+        };
+        document.head.appendChild(script);
+        document.head.removeChild(script);
+    }
+    
+    function renderGoogleSheetData(data) {
+        elements.gsDataBody.innerHTML = '';
+        if (!data || data.length === 0) {
+            elements.gsDataBody.innerHTML = '<tr><td colspan="8" class="px-6 py-4 text-center text-gray-500">ไม่พบข้อมูล</td></tr>';
+            return;
+        }
+        data.reverse().forEach(row => {
+            const tr = `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(row.Timestamp).toLocaleString('th-TH')}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${row.Action}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${row.LaptopID}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${row.Name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${row.Grade}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${row.BorrowDate}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${row.ReturnDate}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold ${row.Status === 'Borrowed' ? 'text-red-500' : 'text-green-500'}">${row.Status}</td>
+                </tr>`;
+            elements.gsDataBody.insertAdjacentHTML('beforeend', tr);
+        });
+    }
+    
+    function handleSubmit(event) {
+        event.preventDefault();
+        const data = getFormData();
+        if (!data) return;
+
+        const laptop = laptopsState.find(l => l.id === data.laptopId);
+        if (laptop.status === 'borrowed') {
+            showAlert('ไม่สามารถยืมได้', 'Laptop เครื่องนี้ถูกยืมไปแล้ว กรุณาใช้ปุ่ม "แก้ไข" เพื่ออัปเดตข้อมูล', 'warning');
+            return;
+        }
+
+        updateLocalState(data.laptopId, { ...data, status: 'borrowed' });
+        sendDataToGAS('borrow', { ...data, status: 'Borrowed' });
+        clearForm();
+    }
+    
+    function handleEdit() {
+        const data = getFormData();
+        if (!data) return;
+        
+        const laptop = laptopsState.find(l => l.id === data.laptopId);
+        if (laptop.status !== 'borrowed') {
+            showAlert('ไม่สามารถแก้ไขได้', 'Laptop เครื่องนี้ยังไม่ได้ถูกยืม', 'warning');
+            return;
+        }
+        
+        updateLocalState(data.laptopId, { ...data, status: 'borrowed' });
+        sendDataToGAS('edit', { ...data, status: 'Borrowed' });
+        clearForm();
+    }
+
+    function handleReturn() {
+        const laptopId = parseInt(elements.laptopIdSelect.value);
+        if (!laptopId) {
+            showAlert('ข้อมูลไม่ครบถ้วน', 'กรุณาเลือก Laptop ที่ต้องการส่งคืน', 'warning');
+            return;
+        }
+
+        const laptop = laptopsState.find(l => l.id === laptopId);
+        if (laptop.status !== 'borrowed') {
+            showAlert('ไม่สามารถคืนได้', 'Laptop เครื่องนี้ไม่ได้อยู่ในสถานะถูกยืม', 'warning');
+            return;
+        }
+
+        const clearedData = { borrower: '', grade: '', borrowDate: '', returnDate: '', status: 'available' };
+        updateLocalState(laptopId, clearedData);
+        sendDataToGAS('return', { laptopId, status: 'Returned' });
+        clearForm();
+    }
+    
+    function getFormData() {
+        const laptopId = parseInt(elements.laptopIdSelect.value);
+        const borrowerName = elements.borrowerNameInput.value.trim();
+        const studentGrade = elements.studentGradeInput.value.trim();
+        const borrowDate = elements.borrowDateInput.value;
+        const returnDate = elements.returnDateInput.value;
+
+        if (!laptopId || !borrowerName || !studentGrade || !borrowDate || !returnDate) {
+            showAlert('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลในฟอร์มให้ครบทุกช่อง', 'warning');
+            return null;
+        }
+        return { laptopId, name: borrowerName, grade: studentGrade, borrowDate, returnDate };
+    }
+    
+    function updateLocalState(id, data) {
+        const index = laptopsState.findIndex(l => l.id === id);
+        if (index !== -1) {
+            laptopsState[index] = { ...laptopsState[index], ...data };
+        }
+    }
+    
+    function renderAll() {
+        renderLaptopIdOptions();
+        renderStatusCards();
+    }
+
+    function init() {
+        loadStateFromLocalStorage();
+        renderAll();
+
+        elements.form.addEventListener('submit', handleSubmit);
+        document.getElementById('edit-button').addEventListener('click', handleEdit);
+        document.getElementById('return-button').addEventListener('click', handleReturn);
+        document.getElementById('clear-form-button').addEventListener('click', clearForm);
+        document.getElementById('fetch-gs-data-button').addEventListener('click', () => sendDataToGAS('fetch'));
+        
+        elements.laptopIdSelect.addEventListener('change', (e) => {
+            const id = parseInt(e.target.value);
+            const laptop = laptopsState.find(l => l.id === id);
+            if (laptop) fillFormFromState(laptop);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
 </script>
 
 </body>
